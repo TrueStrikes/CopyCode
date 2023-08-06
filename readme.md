@@ -1,4 +1,4 @@
-# CopyCat Discord Bot
+# CopyCat 2.0 Discord Bot
 
 The CopyCat Discord Bot is a Python script that monitors specified Discord channels for messages sent by specific users. When it detects a message from the target user, it copies the message content to the clipboard and plays a sound.
 
