@@ -42,7 +42,7 @@ def retrieve_latest_messages(channelid):
         'authorization': bot_token
     }
     params = {
-        'limit': 5  # Update to retrieve the last 5 messages
+        'limit': 1  # Update to retrieve the last 5 messages
     }
     r = requests.get(f'https://discord.com/api/v8/channels/{channelid}/messages', headers=headers, params=params)
     try:
@@ -112,4 +112,4 @@ while True:
                 for message in latest_messages:
                     display_message(channel_id, message)
 
-    time.sleep(0.2)  # Add a wait time of 0.2 seconds before the next iteration
+    time.sleep(0.05)  # Add a wait time of 0.2 seconds before the next iteration
