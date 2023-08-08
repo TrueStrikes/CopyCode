@@ -42,7 +42,7 @@ def retrieve_latest_messages(channelid):
         'authorization': bot_token
     }
     params = {
-        'limit': 1  # Update to retrieve the last 5 messages
+        'limit': 2
     }
     r = requests.get(f'https://discord.com/api/v8/channels/{channelid}/messages', headers=headers, params=params)
     try:
