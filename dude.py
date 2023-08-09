@@ -7,7 +7,7 @@ import re
 import pygame
 import colorama
 import clipboard
-
+import pyautogui
 # Initialize colorama
 colorama.init()
 
@@ -35,6 +35,10 @@ def display_message(channelid, message):
 
             copy_to_clipboard(content)  # Copy the message content to the clipboard
             user_messages.add(content)
+            
+            if auto_enter_mode:
+                perform_auto_enter()  # Perform auto enter if enabled
+
             play_sound("t.mp3")  # Play the sound "t.mp3"
 
 def retrieve_latest_messages(channelid):
@@ -42,7 +46,7 @@ def retrieve_latest_messages(channelid):
         'authorization': bot_token
     }
     params = {
-        'limit': 2
+        'limit': 1  # Update to retrieve the last 5 messages
     }
     r = requests.get(f'https://discord.com/api/v8/channels/{channelid}/messages', headers=headers, params=params)
     try:
@@ -69,6 +73,15 @@ def play_sound(sound_filename):
 def copy_to_clipboard(content):
     clipboard.copy(content)
 
+# Perform auto enter (Ctrl + V, Enter)
+def perform_auto_enter():
+    try:
+        # Simulate Ctrl + V and Enter with reduced delay
+        pyautogui.hotkey("ctrl", "v")
+        pyautogui.typewrite(["enter"], interval=0)  # Adjust interval as needed
+    except Exception as e:
+        print("Error performing auto enter:", e)
+
 # Clear the console and print "Watching" in bright yellow
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -94,10 +107,12 @@ try:
         bot_token = settings_data.get("bot_token", "")
         target_user_ids = settings_data.get("target_user_ids", [])
         target_channels = settings_data.get("target_channels", [])
+        auto_enter_mode = settings_data.get("auto_enter_mode", False)  # Read auto enter mode setting
 except (FileNotFoundError, json.JSONDecodeError):
     bot_token = ""
     target_user_ids = []
     target_channels = []
+    auto_enter_mode = False
 
 # Set the loop to run indefinitely
 while True:
