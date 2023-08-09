@@ -1,88 +1,121 @@
-# CopyCat 2.0 Discord Bot
+# CopyCat Discord Bot
 
-The CopyCat Discord Bot is a Python script that monitors specified Discord channels for messages sent by specific users. When it detects a message from the target user, it copies the message content to the clipboard and plays a sound.
+The CopyCat Discord Bot is a Python script designed to efficiently monitor specified Discord channels for user-generated content (UGC) codes. It is intended to automate the process of sniping UGC codes, which can often be time-sensitive due to their limited availability.
+
+## Purpose
+
+Many online communities frequently share UGC codes (e.g., game item codes, discounts, giveaways) within Discord channels. CopyCat provides a way to swiftly capture and utilize these codes using a bot, enhancing your chances of obtaining them before they expire.
 
 ## Instructions
 
-1. **Requirements:**
+### Requirements:
 
-   - Python 3.6 or later
-   - External modules: `requests`, `pygame`, `colorama`, `clipboard`
+- Python 3.6 or later
+- External modules: `requests`, `pygame`, `colorama`, `clipboard`
 
-2. **Installation:**
+### Installation:
 
-   - Clone this repository to your local machine or download the script.
+1. Clone this repository to your local machine or download the script.
 
-3. **Setting up the Configuration:**
+2. Open a terminal or command prompt and navigate to the directory where the script is located.
 
-   - Create a new `config.json` file in the same directory as the script.
-   - Fill in the `config.json` with the following content:
+3. Install the required external modules using the following command:
 
-     ```json
-     {
-         "config_filename": "settings.json"
-     }
-     ```
 
-   - Create a new file named `settings.json` in the same directory as the script and fill it with the appropriate information:
+### Usage:
 
-     ```json
-     {
-         "bot_token": "YOUR_USER_TOKEN",
-         "target_user_ids": ["TARGET_USER_ID_1", "TARGET_USER_ID_2"],
-         "target_channels": ["TARGET_CHANNEL_ID_1", "TARGET_CHANNEL_ID_2"]
-     }
-     ```
+1. **Configuring the Bot:**
 
-     Replace `"YOUR_BOT_TOKEN"`, `"TARGET_USER_ID_1"`, `"TARGET_USER_ID_2"`, `"TARGET_CHANNEL_ID_1"`, and `"TARGET_CHANNEL_ID_2"` with the actual values from your Discord bot token and target user/channel IDs.
+- Create a new `config.json` file in the same directory as the script.
+- Fill in the `config.json` with the following content:
 
-4. **Running the Script:**
+  ```json
+  {
+      "config_filename": "settings.json"
+  }
+  ```
 
-   - Open a terminal or command prompt and navigate to the directory where the script is located.
-   - Run the script using the command: `python dude.py`.
+- Create a new file named `settings.json` in the same directory as the script (`dude.py`) and configure it with your Discord bot token, target user IDs, and target channel IDs. For example:
 
-5. **Usage:**
+  ```json
+  {
+      "bot_token": "YOUR_USER_TOKEN",
+      "target_user_ids": ["TARGET_USER_ID_1", "TARGET_USER_ID_2"],
+      "target_channels": ["TARGET_CHANNEL_ID_1", "TARGET_CHANNEL_ID_2"]
+  }
+  ```
 
-   - The script will start monitoring the specified Discord channels for messages from the target users.
-   - When it detects a message from a target user, it will copy the message content to the clipboard and play the sound "t.mp3" to alert you.
+  Replace `"YOUR_USER_TOKEN"`, `"TARGET_USER_ID_1"`, `"TARGET_USER_ID_2"`, `"TARGET_CHANNEL_ID_1"`, and `"TARGET_CHANNEL_ID_2"` with your actual values.
 
-6. **Stopping the Script:**
+- To find your Discord user token, you can watch this tutorial video: [How to Get a Discord user Token](https://www.youtube.com/watch?v=YjiQ7CajAgg)
+- To find the channel ID, you can watch this tutorial video: [How to Get a Discord Channel ID](https://www.youtube.com/watch?v=YEgFvgg7ZPI)
 
-   - To stop the script, press `Ctrl + C` in the terminal where the script is running.
+2. **Running the Script:**
 
-## Notes
+- In the terminal or command prompt, navigate to the directory where the script (`dude.py`) is located.
 
-- The script uses the `requests` module to interact with the Discord API, so make sure your bot token has the necessary permissions to read messages in the specified channels.
-- Ensure that the `pygame` module is installed for the sound to work. You can install it using `pip install pygame`.
-- The script will automatically ignore duplicate messages from the same user and avoid copying them to the clipboard multiple times.
-- Messages starting with `# ` will be copied without the `# ` prefix.
+- Install the required external modules using the following command:
 
-## Possible Errors and Fixes
+  ```
+  pip install requests pygame colorama clipboard
+  ```
 
-1. **`NameError: name 'bot_token' is not defined`:**
+- Run the script using the following command:
 
-   If you encounter this error, it means that the `bot_token` variable is not set. Double-check the `settings.json` file and ensure that the `"bot_token"` field contains your Discord bot token.
+  ```
+  python dude.py
+  ```
 
-2. **`KeyError: 'target_user_ids'`:**
+- The script will start monitoring the specified Discord channels for messages from the target users.
+- When it detects a message from a target user, it will copy the message content to the clipboard and play the sound "t.mp3" to alert you.
 
-   This error occurs when the `"target_user_ids"` field is missing or empty in the `settings.json` file. Ensure that you have specified at least one target user ID in the `"target_user_ids"` list.
+### Creating Multiple "Preloads":
 
-3. **`KeyError: 'target_channels'`:**
+You can set up multiple configurations ("preloads") by creating additional JSON files based on the template provided. Each JSON file can contain a different combination of bot token, target user IDs, and target channel IDs. This allows you to quickly switch between different settings without modifying the main script.
 
-   Similar to the previous error, this one happens when the `"target_channels"` field is missing or empty in the `settings.json` file. Ensure that you have specified at least one target channel ID in the `"target_channels"` list.
+Follow these steps to create and use multiple "preloads":
 
-4. **Sound Not Playing:**
+1. **Create a New JSON File:**
 
-   If the sound "t.mp3" is not playing, make sure that the file exists in the same directory as the script and that the `pygame` module is installed correctly.
+- Duplicate the `settings.json` file and rename it to something meaningful (e.g., `preload1.json`, `preload2.json`, etc.).
 
-5. **Messages Not Being Detected:**
+2. **Edit the New JSON File:**
 
-   If the script is not detecting messages, verify that the bot token has the necessary permissions to access the specified channels and read messages.
+- Open the new JSON file using a text editor.
+- Modify the `bot_token`, `target_user_ids`, and `target_channels` values to your desired settings.
 
-If you encounter any other issues or have any further questions, feel free to reach out, and I'll be happy to assist you further.
+  ```json
+  {
+      "bot_token": "NEW_USER_TOKEN",
+      "target_user_ids": ["NEW_TARGET_USER_ID_1", "NEW_TARGET_USER_ID_2"],
+      "target_channels": ["NEW_TARGET_CHANNEL_ID_1", "NEW_TARGET_CHANNEL_ID_2"]
+  }
+  ```
 
-## Disclaimer
+3. **Update `config.json`:**
 
-This script is provided as-is, and the use of this script to interact with Discord should comply with the Discord Terms of Service and Guidelines. Use it responsibly and avoid violating Discord's rules or any applicable laws.
+- Open the `config.json` file and replace the `config_filename` value with the filename of your new JSON file.
 
-Feel free to modify and improve the script as needed.
+  ```json
+  {
+      "config_filename": "preload1.json"
+  }
+  ```
+
+- Now the script will load the settings from the new JSON file specified in `config.json`.
+
+4. **Run the Script:**
+
+- Follow the previous instructions to install external modules and run the script using the new JSON file.
+
+Using this method, you can easily switch between different "preloads" by changing the `config.json` file. Each JSON file represents a unique configuration that you can quickly switch to without modifying the main script.
+
+### Important Notes:
+
+- Be sure to name your new JSON files meaningfully to reflect the different configurations you're using.
+- Always ensure that the JSON syntax is correct in your new configuration files to avoid errors.
+- The script will only load settings from the JSON file specified in `config.json`.
+
+Feel free to customize and organize your configurations based on your needs.
+
+### Disclaimer
