@@ -2,6 +2,9 @@
 
 The CopyCat Discord Bot is a Python script designed to efficiently monitor specified Discord channels for user-generated content (UGC) codes. It is intended to automate the process of sniping UGC codes, which can often be time-sensitive due to their limited availability.
 
+
+**Tydummy.py only works with stealing from typedummy bot**
+
 ## Purpose
 
 Many online communities frequently share UGC codes (e.g., game item codes, discounts, giveaways) within Discord channels. CopyCat provides a way to swiftly capture and utilize these codes using a bot, enhancing your chances of obtaining them before they expire.
