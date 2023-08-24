@@ -7,7 +7,7 @@ import re
 import colorama
 import clipboard
 import keyboard
-from playsound import playsound
+import pygame
 
 # Initialize colorama
 colorama.init()
@@ -15,6 +15,9 @@ colorama.init()
 # Set to keep track of retrieved message IDs and user messages
 retrieved_message_ids = set()
 user_messages = set()
+
+# Initialize pygame for sound playback
+pygame.mixer.init()
 
 # Variable to indicate if the script is running
 running = True
@@ -89,7 +92,8 @@ def retrieve_latest_messages(channelid):
 
 def play_sound(sound_filename):
     try:
-        playsound(sound_filename)
+        pygame.mixer.music.load(sound_filename)
+        pygame.mixer.music.play()
         time.sleep(1)
     except Exception as e:
         print("Error playing sound:", e)
