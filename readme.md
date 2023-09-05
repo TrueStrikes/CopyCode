@@ -122,3 +122,6 @@ Using this method, you can easily switch between different "preloads" by changin
 Feel free to customize and organize your configurations based on your needs.
 
 ### Disclaimer
+
+
+# For support join https://discord.gg/uWsd5Bp4
