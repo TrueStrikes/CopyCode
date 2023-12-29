@@ -2,5 +2,6 @@
     "bot_token": "YOUR_USER_TOKEN",
     "target_user_ids": ["TARGET_USER_ID_1", "TARGET_USER_ID_2"],
     "target_channels": ["TARGET_CHANNEL_ID_1", "TARGET_CHANNEL_ID_2"],
-    "auto_enter_mode": false
+    "auto_enter_mode": false,
+    "auto_click_mode": false
 }
