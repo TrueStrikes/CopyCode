@@ -7,7 +7,9 @@ import re
 import pygame
 import colorama
 import clipboard
+import keyboard
 import pyautogui
+
 # Initialize colorama
 colorama.init()
 
@@ -18,6 +20,78 @@ user_messages = set()
 # Variable to indicate if the script is running
 running = True
 
+# Function to save auto click redeem coordinates to a file
+def save_auto_redeem_coordinates(x, y):
+    with open("auto_redeem_coordinates.txt", "w") as f:
+        f.write(f"{x},{y}")
+
+# Function to load auto click redeem coordinates from a file
+def load_auto_redeem_coordinates():
+    try:
+        with open("auto_redeem_coordinates.txt", "r") as f:
+            coordinates = f.read().strip().split(',')
+            if len(coordinates) == 2:
+                return int(coordinates[0]), int(coordinates[1])
+    except (FileNotFoundError, ValueError):
+        pass
+    return None
+
+# Read the filename of the JSON file from config.json
+config_filename = "config.json"
+try:
+    with open(config_filename, 'r') as config_file:
+        config_data = json.load(config_file)
+except (FileNotFoundError, json.JSONDecodeError):
+    config_data = {}  # If there's an error or the file doesn't exist, initialize an empty config dictionary
+
+# Load the settings from the specified file
+settings_filename = config_data.get("config_filename", "settings.json")
+try:
+    with open(settings_filename, 'r') as settings_file:
+        settings_data = json.load(settings_file)
+        bot_token = settings_data.get("bot_token", "")
+        target_user_ids = settings_data.get("target_user_ids", [])
+        target_channels = settings_data.get("target_channels", [])
+        auto_enter_mode = settings_data.get("auto_enter_mode", False)
+        auto_click_mode = settings_data.get("auto_click_mode", False)
+except (FileNotFoundError, json.JSONDecodeError):
+    bot_token = ""
+    target_user_ids = []
+    target_channels = []
+    auto_enter_mode = False
+    auto_click_mode = False
+
+# Check if auto redeem mode is enabled
+auto_redeem_coordinates = None
+
+if auto_click_mode:
+    existing_coordinates = load_auto_redeem_coordinates()
+
+    if existing_coordinates:
+        use_existing = input(f"Auto redeem mode is enabled. Do you want to use existing coordinates {existing_coordinates}? (y/n): ")
+        if use_existing.lower() == 'y':
+            auto_redeem_coordinates = existing_coordinates
+        else:
+            print("Please click where you want to save the new auto click redeem coordinates. (Keep your mouse there for about 6 seconds)")
+            time.sleep(4)  # Give the user time to switch to the desired location
+
+            # Get and save the mouse coordinates
+            auto_redeem_coordinates = pyautogui.position()
+            save_auto_redeem_coordinates(auto_redeem_coordinates[0], auto_redeem_coordinates[1])
+            print(f"New auto click redeem coordinates saved: {auto_redeem_coordinates}")
+    else:
+        print("Auto redeem mode is enabled. Please click where you want to save the auto click redeem coordinates.")
+        time.sleep(2)  # Give the user time to switch to the desired location
+
+        # Get and save the mouse coordinates
+        auto_redeem_coordinates = pyautogui.position()
+        save_auto_redeem_coordinates(auto_redeem_coordinates[0], auto_redeem_coordinates[1])
+        print(f"Auto click redeem coordinates saved: {auto_redeem_coordinates}")
+else:
+    print("Auto redeem mode is disabled.")
+
+# ... (rest of your existing code)
+
 def display_message(channelid, message):
     message_id = message.get('id')
     if message_id not in retrieved_message_ids:
@@ -25,21 +99,41 @@ def display_message(channelid, message):
         author_id = message.get('author', {}).get('id')
         content = message.get('content')
         if author_id in target_user_ids and content not in user_messages:
-            print(colorama.Fore.YELLOW + "Message:")
-            print(content)
-            print(colorama.Style.RESET_ALL)
+            cleaned_content = remove_discord_formatting(content)
+            if cleaned_content.strip():  # Check if the cleaned content is not empty
+                print(colorama.Fore.YELLOW + "Message:")
+                print(cleaned_content)
+                print(colorama.Style.RESET_ALL)
 
-            # Check if the content starts with "# "
-            if content.startswith("# "):
-                content = content[2:]  # Remove "# " from the beginning
+                copy_to_clipboard(cleaned_content)  # Copy the cleaned message content to the clipboard
+                user_messages.add(content)
+                play_sound("t.mp3")  # Play the sound "t.mp3"
 
-            copy_to_clipboard(content)  # Copy the message content to the clipboard
-            user_messages.add(content)
-            
-            if auto_enter_mode:
-                perform_auto_enter()  # Perform auto enter if enabled
+                if auto_enter_mode:
+                    perform_auto_enter()  # Perform auto enter if enabled
 
-            play_sound("t.mp3")  # Play the sound "t.mp3"
+                if auto_click_mode and auto_redeem_coordinates:
+                    # Automatically click redeem at the specified coordinates
+                    pyautogui.click(auto_redeem_coordinates[0], auto_redeem_coordinates[1])
+                    print(colorama.Fore.GREEN + "*Clicked Redeem*")
+                    print(colorama.Style.RESET_ALL)
+
+def remove_discord_formatting(content):
+    # Remove '# ' from the beginning
+    content = re.sub(r'^#\s*', '', content)
+    
+    # Handle triple backticks (``` ... ```)
+    code_blocks = re.findall(r'```.*?```', content, flags=re.DOTALL)
+    for block in code_blocks:
+        content = content.replace(block, block[3:-3])  # Remove triple backticks
+
+    # Remove double backticks
+    content = re.sub(r'`.*?`', '', content)
+    
+    # Remove strikethrough
+    content = re.sub(r'~~(.*?)~~', r'\1', content)
+    
+    return content
 
 def retrieve_latest_messages(channelid):
     headers = {
@@ -76,43 +170,10 @@ def copy_to_clipboard(content):
 # Perform auto enter (Ctrl + V, Enter)
 def perform_auto_enter():
     try:
-        # Simulate Ctrl + V and Enter with reduced delay
-        pyautogui.hotkey("ctrl", "v")
-        pyautogui.typewrite(["enter"], interval=0)  # Adjust interval as needed
+        clipboard.paste()  # Paste the clipboard content
+        keyboard.press_and_release('enter')  # Simulate Enter key press
     except Exception as e:
         print("Error performing auto enter:", e)
-
-# Clear the console and print "Watching" in bright yellow
-def clear_console():
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print(colorama.Fore.YELLOW + "Watching")
-    print(colorama.Style.RESET_ALL)
-
-# Call the function to clear the console and print "Watching"
-clear_console()
-
-# Read the filename of the JSON file from config.json
-config_filename = "config.json"
-try:
-    with open(config_filename, 'r') as config_file:
-        config_data = json.load(config_file)
-except (FileNotFoundError, json.JSONDecodeError):
-    config_data = {}  # If there's an error or the file doesn't exist, initialize an empty config dictionary
-
-# Load the settings from the specified file
-settings_filename = config_data.get("config_filename", "settings.json")
-try:
-    with open(settings_filename, 'r') as settings_file:
-        settings_data = json.load(settings_file)
-        bot_token = settings_data.get("bot_token", "")
-        target_user_ids = settings_data.get("target_user_ids", [])
-        target_channels = settings_data.get("target_channels", [])
-        auto_enter_mode = settings_data.get("auto_enter_mode", False)  # Read auto enter mode setting
-except (FileNotFoundError, json.JSONDecodeError):
-    bot_token = ""
-    target_user_ids = []
-    target_channels = []
-    auto_enter_mode = False
 
 # Set the loop to run indefinitely
 while True:
@@ -127,4 +188,4 @@ while True:
                 for message in latest_messages:
                     display_message(channel_id, message)
 
-    time.sleep(0.05)  # Add a wait time of 0.2 seconds before the next iteration
+    time.sleep(0.2)  # Add a wait time of 0.2 seconds before the next iteration
