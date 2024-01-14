@@ -89,8 +89,6 @@ if auto_action_mode:
 else:
     print("Auto action mode is disabled.")
 
-# ... (rest of your existing code)
-
 def display_message(channelid, message):
     message_id = message.get('id')
     if message_id not in retrieved_message_ids:
@@ -109,17 +107,19 @@ def display_message(channelid, message):
                 play_sound("t.mp3")  # Play the sound "t.mp3"
 
                 if auto_action_mode:
-                    # Click the textbox
+                    # Click the textbox (twice)
                     pyautogui.click(textbox_coordinates[0], textbox_coordinates[1])
+                    pyautogui.click(textbox_coordinates[0], textbox_coordinates[1])
+                    time.sleep(0.1)
                     # Paste the clipboard content
                     perform_auto_enter()
-                    
-                    # Click the redeem button
+                    time.sleep(0.1)
+                    # Click the redeem button (twice)
                     pyautogui.click(redeem_coordinates[0], redeem_coordinates[1])
-                    
+                    time.sleep(0.1)
+
                     # Click the textbox again
                     pyautogui.click(textbox_coordinates[0], textbox_coordinates[1])
-
                     print(colorama.Fore.GREEN + "Auto redeem done")
                     print(colorama.Style.RESET_ALL)
 
@@ -164,7 +164,6 @@ def play_sound(sound_filename):
         pygame.mixer.init()
         pygame.mixer.music.load(sound_filename)
         pygame.mixer.music.play()
-        time.sleep(1)  # Give it some time to play the sound
     except Exception as e:
         print("Error playing sound:", e)
 
@@ -175,8 +174,9 @@ def copy_to_clipboard(content):
 # Perform auto enter (Ctrl + V, Enter)
 def perform_auto_enter():
     try:
-        keyboard.press_and_release('ctrl+v')  # Simulate Ctrl + V
-        keyboard.press_and_release('enter')  # Simulate Enter key press
+        keyboard.press_and_release('ctrl+a')
+        time.sleep(0.1)
+        keyboard.press_and_release('ctrl+v')
     except Exception as e:
         print("Error performing auto enter:", e)
 
