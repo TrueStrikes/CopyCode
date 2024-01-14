@@ -20,15 +20,15 @@ user_messages = set()
 # Variable to indicate if the script is running
 running = True
 
-# Function to save auto click redeem coordinates to a file
-def save_auto_redeem_coordinates(x, y):
-    with open("auto_redeem_coordinates.txt", "w") as f:
+# Function to save auto action coordinates to a file
+def save_auto_action_coordinates(x, y, filename):
+    with open(filename, "w") as f:
         f.write(f"{x},{y}")
 
-# Function to load auto click redeem coordinates from a file
-def load_auto_redeem_coordinates():
+# Function to load auto action coordinates from a file
+def load_auto_action_coordinates(filename):
     try:
-        with open("auto_redeem_coordinates.txt", "r") as f:
+        with open(filename, "r") as f:
             coordinates = f.read().strip().split(',')
             if len(coordinates) == 2:
                 return int(coordinates[0]), int(coordinates[1])
@@ -52,43 +52,34 @@ try:
         bot_token = settings_data.get("bot_token", "")
         target_user_ids = settings_data.get("target_user_ids", [])
         target_channels = settings_data.get("target_channels", [])
-        auto_enter_mode = settings_data.get("auto_enter_mode", False)
-        auto_click_mode = settings_data.get("auto_click_mode", False)
+        auto_action_mode = settings_data.get("auto_action_mode", False)
 except (FileNotFoundError, json.JSONDecodeError):
     bot_token = ""
     target_user_ids = []
     target_channels = []
-    auto_enter_mode = False
-    auto_click_mode = False
+    auto_action_mode = False
 
-# Check if auto redeem mode is enabled
-auto_redeem_coordinates = None
+# Check if auto action mode is enabled
+auto_action_coordinates_file = "auto_action_coordinates.txt"
+auto_action_coordinates = None
 
-if auto_click_mode:
-    existing_coordinates = load_auto_redeem_coordinates()
+if auto_action_mode:
+    # Ask for textbox coordinates
+    print("Please hover your mouse over the textbox and press 's' to save the coordinates.")
+    keyboard.wait('s', suppress=True)
+    auto_action_coordinates = pyautogui.position()
+    save_auto_action_coordinates(auto_action_coordinates[0], auto_action_coordinates[1], auto_action_coordinates_file)
+    print(f"Textbox coordinates saved: {auto_action_coordinates}")
 
-    if existing_coordinates:
-        use_existing = input(f"Auto redeem mode is enabled. Do you want to use existing coordinates {existing_coordinates}? (y/n): ")
-        if use_existing.lower() == 'y':
-            auto_redeem_coordinates = existing_coordinates
-        else:
-            print("Please click where you want to save the new auto click redeem coordinates. (Keep your mouse there for about 6 seconds)")
-            time.sleep(4)  # Give the user time to switch to the desired location
+    # Ask for redeem button coordinates
+    print("Now, please hover your mouse over the redeem button and press 's' to save the coordinates.")
+    keyboard.wait('s', suppress=True)
+    redeem_button_coordinates = pyautogui.position()
+    save_auto_action_coordinates(redeem_button_coordinates[0], redeem_button_coordinates[1], auto_action_coordinates_file)
+    print(f"Redeem button coordinates saved: {redeem_button_coordinates}")
 
-            # Get and save the mouse coordinates
-            auto_redeem_coordinates = pyautogui.position()
-            save_auto_redeem_coordinates(auto_redeem_coordinates[0], auto_redeem_coordinates[1])
-            print(f"New auto click redeem coordinates saved: {auto_redeem_coordinates}")
-    else:
-        print("Auto redeem mode is enabled. Please click where you want to save the auto click redeem coordinates.")
-        time.sleep(2)  # Give the user time to switch to the desired location
-
-        # Get and save the mouse coordinates
-        auto_redeem_coordinates = pyautogui.position()
-        save_auto_redeem_coordinates(auto_redeem_coordinates[0], auto_redeem_coordinates[1])
-        print(f"Auto click redeem coordinates saved: {auto_redeem_coordinates}")
 else:
-    print("Auto redeem mode is disabled.")
+    print("Auto action mode is disabled.")
 
 # ... (rest of your existing code)
 
@@ -109,19 +100,22 @@ def display_message(channelid, message):
                 user_messages.add(content)
                 play_sound("t.mp3")  # Play the sound "t.mp3"
 
-                if auto_enter_mode:
-                    perform_auto_enter()  # Perform auto enter if enabled
-
-                if auto_click_mode and auto_redeem_coordinates:
-                    # Automatically click redeem at the specified coordinates
-                    pyautogui.click(auto_redeem_coordinates[0], auto_redeem_coordinates[1])
+                if auto_action_mode and auto_action_coordinates and redeem_button_coordinates:
+                    # Click the textbox
+                    pyautogui.click(auto_action_coordinates[0], auto_action_coordinates[1])
+                    # Paste the clipboard content
+                    perform_auto_enter()
+                    # Click the redeem button
+                    pyautogui.click(redeem_button_coordinates[0], redeem_button_coordinates[1])
                     print(colorama.Fore.GREEN + "*Clicked Redeem*")
                     print(colorama.Style.RESET_ALL)
+                    # Click the textbox again
+                    pyautogui.click(auto_action_coordinates[0], auto_action_coordinates[1])
 
 def remove_discord_formatting(content):
     # Remove '# ' from the beginning
     content = re.sub(r'^#\s*', '', content)
-    
+
     # Handle triple backticks (``` ... ```)
     code_blocks = re.findall(r'```.*?```', content, flags=re.DOTALL)
     for block in code_blocks:
@@ -129,10 +123,10 @@ def remove_discord_formatting(content):
 
     # Remove double backticks
     content = re.sub(r'`.*?`', '', content)
-    
+
     # Remove strikethrough
     content = re.sub(r'~~(.*?)~~', r'\1', content)
-    
+
     return content
 
 def retrieve_latest_messages(channelid):
