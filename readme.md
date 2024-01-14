@@ -113,6 +113,9 @@ Follow these steps to create and use multiple "preloads":
 
 Using this method, you can easily switch between different "preloads" by changing the `config.json` file. Each JSON file represents a unique configuration that you can quickly switch to without modifying the main script.
 
+**Quick note**
+- Auto action mode automatically click the redeem button and the textbot for you, so you can be "safe" if you have slow reflexes.
+
 ### Important Notes:
 
 - Be sure to name your new JSON files meaningfully to reflect the different configurations you're using.
