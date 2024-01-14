@@ -36,6 +36,21 @@ def load_auto_action_coordinates(filename):
         pass
     return None
 
+# Function to get confirmation for coordinates
+def get_coordinates_confirmation(filename, action_name):
+    use_existing = input(f"Would you like to use the last {action_name} coordinates? (y/n): ")
+    if use_existing.lower() == 'y':
+        existing_coordinates = load_auto_action_coordinates(filename)
+        if existing_coordinates:
+            print(f"Using existing {action_name} coordinates: {existing_coordinates}")
+            return existing_coordinates
+    print(f"Please hover your mouse over the {action_name} and press 's' to save the coordinates.")
+    keyboard.wait('s', suppress=True)
+    new_coordinates = pyautogui.position()
+    save_auto_action_coordinates(new_coordinates[0], new_coordinates[1], filename)
+    print(f"New {action_name} coordinates saved: {new_coordinates}")
+    return new_coordinates
+
 # Read the filename of the JSON file from config.json
 config_filename = "config.json"
 try:
@@ -53,30 +68,23 @@ try:
         target_user_ids = settings_data.get("target_user_ids", [])
         target_channels = settings_data.get("target_channels", [])
         auto_action_mode = settings_data.get("auto_action_mode", False)
+        textbox_coordinates_file_name = settings_data.get("textbox_coordinates_file_name", "textbox_coordinates.txt")
+        redeem_coordinates_file_name = settings_data.get("redeem_coordinates_file_name", "redeem_coordinates.txt")
 except (FileNotFoundError, json.JSONDecodeError):
     bot_token = ""
     target_user_ids = []
     target_channels = []
     auto_action_mode = False
+    textbox_coordinates_file_name = "textbox_coordinates.txt"
+    redeem_coordinates_file_name = "redeem_coordinates.txt"
 
 # Check if auto action mode is enabled
-auto_action_coordinates_file = "auto_action_coordinates.txt"
-auto_action_coordinates = None
+textbox_coordinates = None
+redeem_coordinates = None
 
 if auto_action_mode:
-    # Ask for textbox coordinates
-    print("Please hover your mouse over the textbox and press 's' to save the coordinates.")
-    keyboard.wait('s', suppress=True)
-    auto_action_coordinates = pyautogui.position()
-    save_auto_action_coordinates(auto_action_coordinates[0], auto_action_coordinates[1], auto_action_coordinates_file)
-    print(f"Textbox coordinates saved: {auto_action_coordinates}")
-
-    # Ask for redeem button coordinates
-    print("Now, please hover your mouse over the redeem button and press 's' to save the coordinates.")
-    keyboard.wait('s', suppress=True)
-    redeem_button_coordinates = pyautogui.position()
-    save_auto_action_coordinates(redeem_button_coordinates[0], redeem_button_coordinates[1], auto_action_coordinates_file)
-    print(f"Redeem button coordinates saved: {redeem_button_coordinates}")
+    textbox_coordinates = get_coordinates_confirmation(textbox_coordinates_file_name, "textbox")
+    redeem_coordinates = get_coordinates_confirmation(redeem_coordinates_file_name, "redeem button")
 
 else:
     print("Auto action mode is disabled.")
@@ -100,17 +108,20 @@ def display_message(channelid, message):
                 user_messages.add(content)
                 play_sound("t.mp3")  # Play the sound "t.mp3"
 
-                if auto_action_mode and auto_action_coordinates and redeem_button_coordinates:
+                if auto_action_mode:
                     # Click the textbox
-                    pyautogui.click(auto_action_coordinates[0], auto_action_coordinates[1])
+                    pyautogui.click(textbox_coordinates[0], textbox_coordinates[1])
                     # Paste the clipboard content
                     perform_auto_enter()
+                    
                     # Click the redeem button
-                    pyautogui.click(redeem_button_coordinates[0], redeem_button_coordinates[1])
-                    print(colorama.Fore.GREEN + "*Clicked Redeem*")
-                    print(colorama.Style.RESET_ALL)
+                    pyautogui.click(redeem_coordinates[0], redeem_coordinates[1])
+                    
                     # Click the textbox again
-                    pyautogui.click(auto_action_coordinates[0], auto_action_coordinates[1])
+                    pyautogui.click(textbox_coordinates[0], textbox_coordinates[1])
+
+                    print(colorama.Fore.GREEN + "Auto redeem done")
+                    print(colorama.Style.RESET_ALL)
 
 def remove_discord_formatting(content):
     # Remove '# ' from the beginning
@@ -164,7 +175,7 @@ def copy_to_clipboard(content):
 # Perform auto enter (Ctrl + V, Enter)
 def perform_auto_enter():
     try:
-        clipboard.paste()  # Paste the clipboard content
+        keyboard.press_and_release('ctrl+v')  # Simulate Ctrl + V
         keyboard.press_and_release('enter')  # Simulate Enter key press
     except Exception as e:
         print("Error performing auto enter:", e)
