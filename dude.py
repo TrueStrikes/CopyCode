@@ -193,4 +193,4 @@ while True:
                 for message in latest_messages:
                     display_message(channel_id, message)
 
-    time.sleep(0.2)  # Add a wait time of 0.2 seconds before the next iteration
+    time.sleep(0.05)  # Add a wait time of 0.05 seconds before the next iteration
