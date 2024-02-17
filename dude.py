@@ -80,10 +80,15 @@ except (FileNotFoundError, json.JSONDecodeError):
 
 # Check if auto action mode is enabled
 textbox_coordinates = None
+empty_space_coordinates = None
 redeem_coordinates = None
 
 if auto_action_mode:
     textbox_coordinates = get_coordinates_confirmation(textbox_coordinates_file_name, "textbox")
+    
+    # Prompt for an empty space between textbox and redeem
+    empty_space_coordinates = get_coordinates_confirmation("empty_space_coordinates.txt", "empty space")
+    
     redeem_coordinates = get_coordinates_confirmation(redeem_coordinates_file_name, "redeem button")
 
 else:
@@ -96,33 +101,33 @@ def display_message(channelid, message):
         author_id = message.get('author', {}).get('id')
         content = message.get('content')
         if author_id in target_user_ids and content not in user_messages:
+            copy_to_clipboard(content)
+            play_sound("t.mp3")  # Play the sound "t.mp3"
             cleaned_content = remove_discord_formatting(content)
+            if auto_action_mode:
+                # Click the textbox (twice)
+                pyautogui.click(textbox_coordinates[0], textbox_coordinates[1])
+                time.sleep(0.05)
+                pyautogui.click(textbox_coordinates[0], textbox_coordinates[1])
+
+                keyboard.press_and_release('ctrl+a')
+                time.sleep(0.05)
+                keyboard.press_and_release('ctrl+a')
+
+                keyboard.press_and_release('ctrl+v')
+                pyautogui.click(empty_space_coordinates[0], empty_space_coordinates[1])
+                # Click the redeem button (twice)
+                pyautogui.click(redeem_coordinates[0], redeem_coordinates[1])
+                pyautogui.click(redeem_coordinates[0], redeem_coordinates[1])
+
+                print(colorama.Fore.GREEN + "Auto redeem done")
+                print(colorama.Style.RESET_ALL)
             if cleaned_content.strip():  # Check if the cleaned content is not empty
                 print(colorama.Fore.YELLOW + "Message:")
                 print(cleaned_content)
                 print(colorama.Style.RESET_ALL)
-
                 copy_to_clipboard(cleaned_content)  # Copy the cleaned message content to the clipboard
                 user_messages.add(content)
-                play_sound("t.mp3")  # Play the sound "t.mp3"
-
-                if auto_action_mode:
-                    # Click the textbox (twice)
-                    pyautogui.click(textbox_coordinates[0], textbox_coordinates[1])
-                    pyautogui.click(textbox_coordinates[0], textbox_coordinates[1])
-                    time.sleep(0.1)
-                    # Paste the clipboard content
-                    perform_auto_enter()
-                    time.sleep(0.1)
-                    # Click the redeem button (twice)
-                    pyautogui.click(redeem_coordinates[0], redeem_coordinates[1])
-                    time.sleep(0.1)
-
-                    # Click the textbox again
-                    pyautogui.click(textbox_coordinates[0], textbox_coordinates[1])
-                    print(colorama.Fore.GREEN + "Auto redeem done")
-                    print(colorama.Style.RESET_ALL)
-
 def remove_discord_formatting(content):
     # Remove '# ' from the beginning
     content = re.sub(r'^#\s*', '', content)
@@ -175,7 +180,7 @@ def copy_to_clipboard(content):
 def perform_auto_enter():
     try:
         keyboard.press_and_release('ctrl+a')
-        time.sleep(0.1)
+        time.sleep(0.05)
         keyboard.press_and_release('ctrl+v')
     except Exception as e:
         print("Error performing auto enter:", e)
